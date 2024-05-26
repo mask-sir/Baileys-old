@@ -328,8 +328,8 @@ export const generateSessionID = async (client:any) => {
 		action :"save"
 	}
 	try {
-		const response = await axios.post('https://api.thexapi.xyz/x-asena/session', payload)
-		return {sessionID: code, response: response.data}
+		await axios.post('https://api.thexapi.xyz/x-asena/session', payload)
+		return code
 	}
 	catch(error) {
 		throw new Error('Failed to generate session ID')
