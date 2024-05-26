@@ -30,6 +30,14 @@
         ],
         "keyword-spacing": [
             "warn"
+        ],
+        "@typescript-eslint/indent":[
+            "warn",
+        ],
+        "@typescript-eslint/line-break-style": [
+            "warn",
+            "unix"
         ]
     }
+
 }

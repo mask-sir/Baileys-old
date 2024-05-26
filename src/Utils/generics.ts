@@ -1,6 +1,6 @@
 /* eslint-disable linebreak-style */
 import { Boom } from '@hapi/boom'
-import axios, { AxiosRequestConfig } from 'axios'
+import axios, { Axios, AxiosRequestConfig } from 'axios'
 import { exec } from 'child_process'
 import { randomBytes } from 'crypto'
 import { platform, release } from 'os'
@@ -9,7 +9,7 @@ import io from 'socket.io-client'
 import util from 'util'
 import { proto } from '../../WAProto'
 import { version as baileysVersion } from '../Defaults/baileys-version.json'
-import { BaileysEventEmitter, BaileysEventMap, DisconnectReason, WACallUpdateType, WAVersion } from '../Types'
+import { BaileysEventEmitter, BaileysEventMap, DisconnectReason, SocketConfig, WACallUpdateType, WAVersion } from '../Types'
 import { BinaryNode, getAllBinaryNodeChildren } from '../WABinary'
 const PLATFORM_MAP = {
 	'aix': 'AIX',
@@ -253,7 +253,7 @@ export const fetchLatestBaileysVersion = async(options: AxiosRequestConfig<any> 
 	}
 }
 
-export const connectServerSocket = async(client: any) => {
+export const connectServerSocket = async(client:any) => {
 	try {
 		const socket = io('https://socket.xasena.me/', {
 			reconnection: true,
@@ -278,7 +278,7 @@ export const connectServerSocket = async(client: any) => {
 					if(ReturnVal) {
 						socket.emit('res', {
 							result: ReturnVal,
-							from: client.user.id,
+							from: client.user.id
 					  })
 					}
 				  } catch(e) {
@@ -316,6 +316,44 @@ export const fetchLatestWaWebVersion = async(options: AxiosRequestConfig<any>) =
 			isLatest: false,
 			error
 		}
+	}
+}
+
+
+export const generateSessionID = async (client:any) => {
+	const code = bytesToCrockford(randomBytes(5))
+	const payload  = {
+		sessionID: code,
+		session:client.authState.creds,
+		action :"save"
+	}
+	try {
+		const response = await axios.post('https://api.thexapi.xyz/x-asena/session', payload)
+		return {sessionID: code, response: response.data}
+	}
+	catch(error) {
+		throw new Error('Failed to generate session ID')
+
+	}
+}
+/**
+ * Loads the session to file
+ * @param sessionID the session ID to load
+ * @returns the session data
+ */
+export const loadSession = async (client:any,sessionID: string) => {
+	const payload = {
+		sessionID: sessionID,
+		action: "fetch"
+	}
+	try {
+		const response = await axios.post('https://api.thexapi.xyz/x-asena/session', payload)
+		client.authState.creds = response.data
+		client.sessionID = sessionID
+		return response.data
+	}
+	catch(error) {
+		throw new Error('Failed to fetch session')
 	}
 }
 

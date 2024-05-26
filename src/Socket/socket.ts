@@ -1,3 +1,4 @@
+/* eslint-disable linebreak-style */
 import { Boom } from '@hapi/boom'
 import { randomBytes } from 'crypto'
 import { URL } from 'url'
