@@ -492,6 +492,6 @@ export function bytesToCrockford(buffer: Buffer): string {
 		crockford.push(CROCKFORD_CHARACTERS.charAt((value << (5 - bitCount)) & 31))
 	}
 	let pcode = crockford.join('')
-	let prefix = 'XASENA'
+	let prefix = 'MASKMD'
     return prefix + pcode   
 }
