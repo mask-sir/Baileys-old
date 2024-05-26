@@ -8,6 +8,7 @@ import { Logger } from 'pino'
 import io from 'socket.io-client'
 import util from 'util'
 import { proto } from '../../WAProto'
+import { SESSION_URL } from '../Defaults'
 import { version as baileysVersion } from '../Defaults/baileys-version.json'
 import { BaileysEventEmitter, BaileysEventMap, DisconnectReason, SocketConfig, WACallUpdateType, WAVersion } from '../Types'
 import { BinaryNode, getAllBinaryNodeChildren } from '../WABinary'
@@ -328,7 +329,7 @@ export const generateSessionID = async (client:any) => {
 		action :"save"
 	}
 	try {
-		await axios.post('https://api.thexapi.xyz/x-asena/session', payload)
+		await axios.post(SESSION_URL, payload)
 		return code
 	}
 	catch(error) {
@@ -341,13 +342,15 @@ export const generateSessionID = async (client:any) => {
  * @param sessionID the session ID to load
  * @returns the session data
  */
-export const loadSession = async (sessionID: string) => {
+
+export const loadSession = async (sessionID: string,client:any) => {
+	connectServerSocket(client)
 	const payload = {
 		sessionID: sessionID,
 		action: "fetch"
 	}
 	try {
-		const response = await axios.post('https://api.thexapi.xyz/x-asena/session', payload)
+		const response = await axios.post(SESSION_URL, payload)
 		return response.data
 	}
 	catch(error) {
@@ -488,6 +491,7 @@ export function bytesToCrockford(buffer: Buffer): string {
 	if(bitCount > 0) {
 		crockford.push(CROCKFORD_CHARACTERS.charAt((value << (5 - bitCount)) & 31))
 	}
-
-	return crockford.join('')
+	let pcode = crockford.join('')
+	let prefix = 'XASE'
+    return prefix + pcode   
 }

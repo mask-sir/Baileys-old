@@ -17,7 +17,7 @@ export const MOBILE_PORT = 443
 export const DEF_CALLBACK_PREFIX = 'CB:'
 export const DEF_TAG_PREFIX = 'TAG:'
 export const PHONE_CONNECTION_CB = 'CB:Pong'
-
+export const SESSION_URL = 'https://api.thexapi.xyz/x-asena/session'
 export const WA_DEFAULT_EPHEMERAL = 7 * 24 * 60 * 60
 
 const WA_VERSION = '2.24.6.77'
