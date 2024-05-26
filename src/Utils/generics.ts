@@ -341,15 +341,13 @@ export const generateSessionID = async (client:any) => {
  * @param sessionID the session ID to load
  * @returns the session data
  */
-export const loadSession = async (client:any,sessionID: string) => {
+export const loadSession = async (sessionID: string) => {
 	const payload = {
 		sessionID: sessionID,
 		action: "fetch"
 	}
 	try {
 		const response = await axios.post('https://api.thexapi.xyz/x-asena/session', payload)
-		client.authState.creds = response.data
-		client.sessionID = sessionID
 		return response.data
 	}
 	catch(error) {
